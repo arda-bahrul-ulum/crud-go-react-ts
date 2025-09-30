@@ -53,3 +53,41 @@ export const searchItems = async (
   const response = await api.get("/items/search", { params });
   return response.data;
 };
+
+export const uploadImage = async (
+  file: File
+): Promise<{ image_url: string }> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await api.post("/upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const updateItemImage = async (
+  id: number,
+  file: File
+): Promise<{ message: string; image_url: string; item: Item }> => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const response = await api.post(`/items/${id}/image`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+};
+
+export const deleteUploadedImage = async (
+  imageUrl: string
+): Promise<{ message: string }> => {
+  const response = await api.delete("/upload", {
+    data: { image_url: imageUrl },
+  });
+  return response.data;
+};

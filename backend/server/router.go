@@ -36,6 +36,9 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		c.Next()
 	})
 
+	// Static file serving for uploads
+	router.Static("/uploads", "./uploads")
+
 	// API routes
 	api := router.Group("/api/v1")
 	{
@@ -47,7 +50,12 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 			items.GET("/:id", itemHandler.GetItem)
 			items.PUT("/:id", itemHandler.UpdateItem)
 			items.DELETE("/:id", itemHandler.DeleteItem)
+			items.POST("/:id/image", itemHandler.UpdateItemImage)
 		}
+		
+		// Upload routes
+		api.POST("/upload", itemHandler.UploadImage)
+		api.DELETE("/upload", itemHandler.DeleteUploadedImage)
 	}
 
 	// Health check

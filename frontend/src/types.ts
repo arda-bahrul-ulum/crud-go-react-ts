@@ -3,6 +3,7 @@ export interface Item {
   name: string;
   description: string;
   price: number;
+  image_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -11,12 +12,14 @@ export interface CreateItemRequest {
   name: string;
   description: string;
   price: number;
+  image_url?: string;
 }
 
 export interface UpdateItemRequest {
   name?: string;
   description?: string;
   price?: number;
+  image_url?: string;
 }
 
 export interface SearchItemRequest {

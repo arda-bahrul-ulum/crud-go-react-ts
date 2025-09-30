@@ -11,6 +11,7 @@ type Item struct {
 	Name        string         `json:"name" gorm:"not null"`
 	Description string         `json:"description"`
 	Price       float64        `json:"price" gorm:"not null"`
+	ImageURL    string         `json:"image_url"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `json:"deleted_at" gorm:"index"`
@@ -20,12 +21,14 @@ type CreateItemRequest struct {
 	Name        string  `json:"name" binding:"required"`
 	Description string  `json:"description"`
 	Price       float64 `json:"price" binding:"required,min=0"`
+	ImageURL    string  `json:"image_url"`
 }
 
 type UpdateItemRequest struct {
 	Name        *string  `json:"name"`
 	Description *string  `json:"description"`
 	Price       *float64 `json:"price"`
+	ImageURL    *string  `json:"image_url"`
 }
 
 type SearchItemRequest struct {

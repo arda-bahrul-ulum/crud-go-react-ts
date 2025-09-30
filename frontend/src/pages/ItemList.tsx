@@ -292,6 +292,15 @@ const ItemList: React.FC<ItemListProps> = ({
                 </div>
               </div>
               <div className="item-content">
+                {item.image_url && (
+                  <div className="item-image-container">
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="item-image"
+                    />
+                  </div>
+                )}
                 <p className="item-description">{item.description}</p>
                 <p className="item-price">{formatPrice(item.price)}</p>
                 <p className="item-date">

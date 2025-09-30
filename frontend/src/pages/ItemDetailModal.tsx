@@ -28,65 +28,73 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({ item, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Item Details</h2>
-          <button onClick={onClose} className="modal-close">
-            ✕
+          <button onClick={onClose} className="btn-close">
+            &times;
           </button>
         </div>
 
-        <div className="modal-content">
-          <div className="detail-section">
-            <h3 className="detail-title">Basic Information</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <label>ID</label>
-                <span className="detail-value">{item.id}</span>
-              </div>
-              <div className="detail-item">
-                <label>Name</label>
-                <span className="detail-value">{item.name}</span>
-              </div>
-              <div className="detail-item">
-                <label>Price</label>
-                <span className="detail-value price-value">
-                  {formatPrice(item.price)}
-                </span>
-              </div>
+        <div className="form">
+          <div className="detail-row">
+            <div className="form-group">
+              <label>ID</label>
+              <div className="detail-value id-value">{item.id}</div>
+            </div>
+            <div className="form-group">
+              <label>Name</label>
+              <div className="detail-value name-value">{item.name}</div>
             </div>
           </div>
 
-          <div className="detail-section">
-            <h3 className="detail-title">Description</h3>
+          <div className="form-group">
+            <label>Price</label>
+            <div className="detail-value price-value">
+              {formatPrice(item.price)}
+            </div>
+          </div>
+
+          {item.image_url && (
+            <div className="form-group">
+              <label>Image</label>
+              <div className="detail-image-container">
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  className="detail-image"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="form-group">
+            <label>Description</label>
             <div className="detail-description">
               {item.description || "No description provided"}
             </div>
           </div>
 
-          <div className="detail-section">
-            <h3 className="detail-title">Timestamps</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <label>Created At</label>
-                <span className="detail-value">
-                  {formatDate(item.created_at)}
-                </span>
+          <div className="detail-row">
+            <div className="form-group">
+              <label>Created At</label>
+              <div className="detail-value timestamp-value">
+                {formatDate(item.created_at)}
               </div>
-              <div className="detail-item">
-                <label>Updated At</label>
-                <span className="detail-value">
-                  {formatDate(item.updated_at)}
-                </span>
+            </div>
+            <div className="form-group">
+              <label>Updated At</label>
+              <div className="detail-value timestamp-value">
+                {formatDate(item.updated_at)}
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="modal-footer">
-          <button onClick={onClose} className="btn btn-secondary">
-            Close
-          </button>
+          <div className="form-actions">
+            <button onClick={onClose} className="btn btn-secondary">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>

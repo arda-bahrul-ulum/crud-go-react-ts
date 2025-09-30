@@ -18,6 +18,7 @@ type ItemRepository interface {
 	SearchWithPriceFilterCount(query string, minPrice, maxPrice float64) (int64, error)
 	Update(item *model.Item) error
 	Delete(id uint) error
+	CountByImageURL(imageURL string) (int64, error)
 }
 
 type itemRepository struct {
@@ -115,4 +116,10 @@ func (r *itemRepository) SearchWithPriceFilterCount(query string, minPrice, maxP
 
 func (r *itemRepository) Delete(id uint) error {
 	return r.db.Delete(&model.Item{}, id).Error
+}
+
+func (r *itemRepository) CountByImageURL(imageURL string) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Item{}).Where("image_url = ?", imageURL).Count(&count).Error
+	return count, err
 }

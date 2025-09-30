@@ -14,6 +14,7 @@ type ItemService interface {
 	SearchItems(req *model.SearchItemRequest) (*model.SearchItemResponse, error)
 	UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error)
 	DeleteItem(id uint) error
+	CheckImageUsage(imageURL string) (int64, error)
 }
 
 type itemService struct {
@@ -29,6 +30,7 @@ func (s *itemService) CreateItem(req *model.CreateItemRequest) (*model.Item, err
 		Name:        req.Name,
 		Description: req.Description,
 		Price:       req.Price,
+		ImageURL:    req.ImageURL,
 	}
 
 	if err := s.itemRepo.Create(item); err != nil {
@@ -156,6 +158,9 @@ func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.
 		}
 		item.Price = *req.Price
 	}
+	if req.ImageURL != nil {
+		item.ImageURL = *req.ImageURL
+	}
 
 	if err := s.itemRepo.Update(item); err != nil {
 		return nil, err
@@ -166,4 +171,8 @@ func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.
 
 func (s *itemService) DeleteItem(id uint) error {
 	return s.itemRepo.Delete(id)
+}
+
+func (s *itemService) CheckImageUsage(imageURL string) (int64, error) {
+	return s.itemRepo.CountByImageURL(imageURL)
 }
