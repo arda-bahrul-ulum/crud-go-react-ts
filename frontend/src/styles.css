@@ -87,6 +87,15 @@ body {
   background-color: #b91c1c;
 }
 
+.btn-info {
+  background-color: #0891b2;
+  color: white;
+}
+
+.btn-info:hover:not(:disabled) {
+  background-color: #0e7490;
+}
+
 .btn-sm {
   padding: 0.25rem 0.5rem;
   font-size: 0.75rem;
@@ -430,6 +439,20 @@ body {
     height: 2rem;
     font-size: 0.75rem;
   }
+
+  .detail-modal {
+    width: 95%;
+    margin: 0.5rem;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 }
 
 /* Price filter styles */
@@ -591,4 +614,86 @@ body {
 .pagination-number.active:hover {
   background: #1d4ed8;
   border-color: #1d4ed8;
+}
+
+/* Item Detail Modal styles */
+.detail-modal {
+  max-width: 600px;
+  width: 90%;
+}
+
+.detail-section {
+  margin-bottom: 2rem;
+}
+
+.detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.detail-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  font-size: 1rem;
+  color: #374151;
+  font-weight: 500;
+}
+
+.detail-value.price-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #059669;
+}
+
+.detail-description {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #374151;
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+}
+
+.detail-description:empty::before {
+  content: "No description provided";
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.modal-footer {
+  padding: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
 }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Item, SearchItemResponse, PaginatedItemResponse } from "../types";
 import { deleteItem, searchItems, getItems } from "../api";
+import ItemDetailModal from "./ItemDetailModal";
 
 interface ItemListProps {
   onEdit: (item: Item) => void;
@@ -25,6 +26,8 @@ const ItemList: React.FC<ItemListProps> = ({
     null
   );
   const [isSearching, setIsSearching] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Load all items on component mount and when refreshTrigger changes
   useEffect(() => {
@@ -96,6 +99,16 @@ const ItemList: React.FC<ItemListProps> = ({
     setCurrentPage(page);
     // Scroll to top when changing page
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleViewDetail = (item: Item) => {
+    setSelectedItem(item);
+    setShowDetailModal(true);
+  };
+
+  const handleCloseDetail = () => {
+    setShowDetailModal(false);
+    setSelectedItem(null);
   };
 
   const handleDelete = async (id: number) => {
@@ -259,6 +272,12 @@ const ItemList: React.FC<ItemListProps> = ({
                 <h3>{item.name}</h3>
                 <div className="item-actions">
                   <button
+                    onClick={() => handleViewDetail(item)}
+                    className="btn btn-sm btn-info"
+                  >
+                    View Detail
+                  </button>
+                  <button
                     onClick={() => onEdit(item)}
                     className="btn btn-sm btn-secondary"
                   >
@@ -327,6 +346,11 @@ const ItemList: React.FC<ItemListProps> = ({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Item Detail Modal */}
+      {showDetailModal && (
+        <ItemDetailModal item={selectedItem} onClose={handleCloseDetail} />
       )}
     </div>
   );
