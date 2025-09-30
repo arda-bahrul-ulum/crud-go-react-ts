@@ -10,6 +10,10 @@ type ItemRepository interface {
 	Create(item *model.Item) error
 	GetByID(id uint) (*model.Item, error)
 	GetAll() ([]model.Item, error)
+	Search(query string, limit, offset int) ([]model.Item, error)
+	SearchCount(query string) (int64, error)
+	SearchWithPriceFilter(query string, minPrice, maxPrice float64, limit, offset int) ([]model.Item, error)
+	SearchWithPriceFilterCount(query string, minPrice, maxPrice float64) (int64, error)
 	Update(item *model.Item) error
 	Delete(id uint) error
 }
@@ -43,6 +47,56 @@ func (r *itemRepository) GetAll() ([]model.Item, error) {
 
 func (r *itemRepository) Update(item *model.Item) error {
 	return r.db.Save(item).Error
+}
+
+func (r *itemRepository) Search(query string, limit, offset int) ([]model.Item, error) {
+	var items []model.Item
+	err := r.db.Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%").
+		Limit(limit).
+		Offset(offset).
+		Find(&items).Error
+	return items, err
+}
+
+func (r *itemRepository) SearchCount(query string) (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Item{}).
+		Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%").
+		Count(&count).Error
+	return count, err
+}
+
+func (r *itemRepository) SearchWithPriceFilter(query string, minPrice, maxPrice float64, limit, offset int) ([]model.Item, error) {
+	var items []model.Item
+	queryBuilder := r.db.Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%")
+	
+	// Add price filter
+	if minPrice > 0 {
+		queryBuilder = queryBuilder.Where("price >= ?", minPrice)
+	}
+	if maxPrice > 0 {
+		queryBuilder = queryBuilder.Where("price <= ?", maxPrice)
+	}
+	
+	err := queryBuilder.Limit(limit).Offset(offset).Find(&items).Error
+	return items, err
+}
+
+func (r *itemRepository) SearchWithPriceFilterCount(query string, minPrice, maxPrice float64) (int64, error) {
+	var count int64
+	queryBuilder := r.db.Model(&model.Item{}).
+		Where("name ILIKE ? OR description ILIKE ?", "%"+query+"%", "%"+query+"%")
+	
+	// Add price filter
+	if minPrice > 0 {
+		queryBuilder = queryBuilder.Where("price >= ?", minPrice)
+	}
+	if maxPrice > 0 {
+		queryBuilder = queryBuilder.Where("price <= ?", maxPrice)
+	}
+	
+	err := queryBuilder.Count(&count).Error
+	return count, err
 }
 
 func (r *itemRepository) Delete(id uint) error {

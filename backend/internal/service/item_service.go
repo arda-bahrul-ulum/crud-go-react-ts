@@ -10,6 +10,7 @@ type ItemService interface {
 	CreateItem(req *model.CreateItemRequest) (*model.Item, error)
 	GetItemByID(id uint) (*model.Item, error)
 	GetAllItems() ([]model.Item, error)
+	SearchItems(req *model.SearchItemRequest) (*model.SearchItemResponse, error)
 	UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error)
 	DeleteItem(id uint) error
 }
@@ -42,6 +43,61 @@ func (s *itemService) GetItemByID(id uint) (*model.Item, error) {
 
 func (s *itemService) GetAllItems() ([]model.Item, error) {
 	return s.itemRepo.GetAll()
+}
+
+func (s *itemService) SearchItems(req *model.SearchItemRequest) (*model.SearchItemResponse, error) {
+	// Set default values
+	if req.Limit <= 0 {
+		req.Limit = 10
+	}
+	if req.Offset < 0 {
+		req.Offset = 0
+	}
+
+	var items []model.Item
+	var total int64
+	var err error
+
+	// Check if price filter is applied
+	if req.MinPrice > 0 || req.MaxPrice > 0 {
+		// Search with price filter
+		items, err = s.itemRepo.SearchWithPriceFilter(req.Query, req.MinPrice, req.MaxPrice, req.Limit, req.Offset)
+		if err != nil {
+			return nil, err
+		}
+		total, err = s.itemRepo.SearchWithPriceFilterCount(req.Query, req.MinPrice, req.MaxPrice)
+		if err != nil {
+			return nil, err
+		}
+	} else if req.Query != "" {
+		// Regular search without price filter
+		items, err = s.itemRepo.Search(req.Query, req.Limit, req.Offset)
+		if err != nil {
+			return nil, err
+		}
+		total, err = s.itemRepo.SearchCount(req.Query)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// No search query and no price filter - this shouldn't happen due to validation
+		// but handle gracefully
+		items = []model.Item{}
+		total = 0
+	}
+
+	// Calculate pagination info
+	totalPages := int((total + int64(req.Limit) - 1) / int64(req.Limit))
+	hasMore := int64(req.Offset+req.Limit) < total
+
+	return &model.SearchItemResponse{
+		Items:      items,
+		Total:      total,
+		Limit:      req.Limit,
+		Offset:     req.Offset,
+		HasMore:    hasMore,
+		TotalPages: totalPages,
+	}, nil
 }
 
 func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error) {

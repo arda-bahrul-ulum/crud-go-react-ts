@@ -536,7 +536,7 @@ volumes:
 - Node.js 18+ (untuk development frontend)
 - Go 1.23+ (untuk development backend)
 
-### 1. Menggunakan Docker (Recommended)
+### 1. Menggunakan Docker (Production)
 
 ```bash
 # Clone repository
@@ -552,9 +552,9 @@ docker-compose up --build
 # Database: localhost:5432
 ```
 
-### 2. Development Mode
+### 2. Development Mode (Hot Reload)
 
-#### Backend
+#### Backend dengan Air (Hot Reload)
 
 ```bash
 cd backend
@@ -562,11 +562,17 @@ cd backend
 # Install dependencies
 go mod download
 
-# Setup environment variables
-cp .env.example .env
+# Install Air (jika belum terinstall)
+go install github.com/air-verse/air@latest
 
-# Jalankan aplikasi
-go run cmd/server/main.go
+# Jalankan dengan hot reload
+air
+
+# Atau menggunakan script
+# Windows:
+run-dev.bat
+# Linux/Mac:
+./run-dev.sh
 ```
 
 #### Frontend
@@ -581,6 +587,20 @@ npm install
 npm start
 # atau
 npm run dev
+```
+
+### 3. Development Mode (Manual Restart)
+
+#### Backend
+
+```bash
+cd backend
+
+# Install dependencies
+go mod download
+
+# Jalankan aplikasi (perlu restart manual)
+go run cmd/server/main.go
 ```
 
 ---
@@ -628,13 +648,14 @@ http://localhost:8080/api/v1
 
 #### Items
 
-| Method | Endpoint     | Description     | Request Body        | Response            |
-| ------ | ------------ | --------------- | ------------------- | ------------------- |
-| GET    | `/items`     | Get all items   | -                   | `Item[]`            |
-| GET    | `/items/:id` | Get item by ID  | -                   | `Item`              |
-| POST   | `/items`     | Create new item | `CreateItemRequest` | `Item`              |
-| PUT    | `/items/:id` | Update item     | `UpdateItemRequest` | `Item`              |
-| DELETE | `/items/:id` | Delete item     | -                   | `{message: string}` |
+| Method | Endpoint        | Description     | Request Body                                                   | Response             |
+| ------ | --------------- | --------------- | -------------------------------------------------------------- | -------------------- |
+| GET    | `/items`        | Get all items   | -                                                              | `Item[]`             |
+| GET    | `/items/search` | Search items    | Query params: `q`, `min_price`, `max_price`, `limit`, `offset` | `SearchItemResponse` |
+| GET    | `/items/:id`    | Get item by ID  | -                                                              | `Item`               |
+| POST   | `/items`        | Create new item | `CreateItemRequest`                                            | `Item`               |
+| PUT    | `/items/:id`    | Update item     | `UpdateItemRequest`                                            | `Item`               |
+| DELETE | `/items/:id`    | Delete item     | -                                                              | `{message: string}`  |
 
 #### Health Check
 
@@ -670,6 +691,44 @@ Content-Type: application/json
 }
 ```
 
+#### Search Items
+
+```bash
+# Basic search
+GET /api/v1/items/search?q=laptop&limit=10&offset=0
+
+# Search with price filter
+GET /api/v1/items/search?q=laptop&min_price=1000000&max_price=5000000&limit=10&offset=0
+
+# Search with only minimum price
+GET /api/v1/items/search?q=laptop&min_price=2000000&limit=10&offset=0
+
+# Search with only maximum price
+GET /api/v1/items/search?q=laptop&max_price=3000000&limit=10&offset=0
+```
+
+#### Search Response
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "description": "Gaming laptop",
+      "price": 15000000,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "total": 1,
+  "limit": 10,
+  "offset": 0,
+  "has_more": false,
+  "total_pages": 1
+}
+```
+
 ---
 
 ## 🎯 Fitur Aplikasi
@@ -678,12 +737,15 @@ Content-Type: application/json
 - ✅ **Read** - Melihat daftar item dan detail item
 - ✅ **Update** - Mengedit item yang sudah ada
 - ✅ **Delete** - Menghapus item
+- ✅ **Search** - Pencarian server-side dengan pagination
+- ✅ **Price Filter** - Filter berdasarkan rentang harga (min/max)
 - ✅ **Form Validation** - Validasi input form
 - ✅ **Error Handling** - Penanganan error yang baik
 - ✅ **Loading States** - Indikator loading
 - ✅ **Responsive Design** - Tampilan yang responsif
 - ✅ **Type Safety** - TypeScript untuk type safety
 - ✅ **Docker Support** - Containerization
+- ✅ **Hot Reload** - Development dengan Air untuk backend
 
 ---
 

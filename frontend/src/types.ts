@@ -1,20 +1,37 @@
 export interface Item {
-  id: number
-  name: string
-  description: string
-  price: number
-  created_at: string
-  updated_at: string
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface CreateItemRequest {
-  name: string
-  description: string
-  price: number
+  name: string;
+  description: string;
+  price: number;
 }
 
 export interface UpdateItemRequest {
-  name?: string
-  description?: string
-  price?: number
+  name?: string;
+  description?: string;
+  price?: number;
+}
+
+export interface SearchItemRequest {
+  q: string;
+  min_price?: number;
+  max_price?: number;
+  limit?: number;
+  offset?: number;
+}
+
+export interface SearchItemResponse {
+  items: Item[];
+  total: number;
+  limit: number;
+  offset: number;
+  has_more: boolean;
+  total_pages: number;
 }

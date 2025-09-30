@@ -27,3 +27,20 @@ type UpdateItemRequest struct {
 	Description *string  `json:"description"`
 	Price       *float64 `json:"price"`
 }
+
+type SearchItemRequest struct {
+	Query   string  `form:"q" json:"query"`
+	MinPrice float64 `form:"min_price" json:"min_price"`
+	MaxPrice float64 `form:"max_price" json:"max_price"`
+	Limit   int     `form:"limit" json:"limit"`
+	Offset  int     `form:"offset" json:"offset"`
+}
+
+type SearchItemResponse struct {
+	Items      []Item `json:"items"`
+	Total      int64  `json:"total"`
+	Limit      int    `json:"limit"`
+	Offset     int    `json:"offset"`
+	HasMore    bool   `json:"has_more"`
+	TotalPages int    `json:"total_pages"`
+}

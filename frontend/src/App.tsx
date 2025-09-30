@@ -1,68 +1,55 @@
-import React, { useState, useEffect } from 'react'
-import ItemList from './pages/ItemList'
-import ItemForm from './pages/ItemForm'
-import { Item } from './types'
-import { getItems } from './api'
+import React, { useState } from "react";
+import ItemList from "./pages/ItemList";
+import ItemForm from "./pages/ItemForm";
+import { Item } from "./types";
 
 function App() {
-  const [items, setItems] = useState<Item[]>([])
-  const [editingItem, setEditingItem] = useState<Item | null>(null)
-  const [showForm, setShowForm] = useState(false)
-
-  useEffect(() => {
-    loadItems()
-  }, [])
-
-  const loadItems = async () => {
-    try {
-      const data = await getItems()
-      setItems(data)
-    } catch (error) {
-      console.error('Error loading items:', error)
-    }
-  }
+  const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleEdit = (item: Item) => {
-    setEditingItem(item)
-    setShowForm(true)
-  }
+    setEditingItem(item);
+    setShowForm(true);
+  };
 
   const handleAdd = () => {
-    setEditingItem(null)
-    setShowForm(true)
-  }
+    setEditingItem(null);
+    setShowForm(true);
+  };
 
   const handleFormClose = () => {
-    setShowForm(false)
-    setEditingItem(null)
-    loadItems()
-  }
+    setShowForm(false);
+    setEditingItem(null);
+    // Trigger refresh after form closes
+    setRefreshTrigger((prev) => prev + 1);
+  };
+
+  const handleDelete = () => {
+    // Trigger refresh after delete
+    setRefreshTrigger((prev) => prev + 1);
+  };
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>Simple CRUD App</h1>
+        <h1>Go React TypeScript Simple Apps</h1>
         <button onClick={handleAdd} className="btn btn-primary">
           Add New Item
         </button>
       </header>
 
       <main className="app-main">
-        <ItemList 
-          items={items} 
+        <ItemList
           onEdit={handleEdit}
-          onDelete={loadItems}
+          onDelete={handleDelete}
+          refreshTrigger={refreshTrigger}
         />
       </main>
 
-      {showForm && (
-        <ItemForm 
-          item={editingItem}
-          onClose={handleFormClose}
-        />
-      )}
+      {showForm && <ItemForm item={editingItem} onClose={handleFormClose} />}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
