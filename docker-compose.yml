@@ -1,0 +1,61 @@
+version: "3.8"
+
+services:
+  # PotgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: simple-crud-postgres
+    environment:
+      POSTGRES_DB: crud_go_ts
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - simple-crud-network
+
+  # Backend Go API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: simple-crud-backend
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres123
+      DB_NAME: crud_go_ts
+      SERVER_PORT: 8080
+      SERVER_HOST: 0.0.0.0
+      ENV: production
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    networks:
+      - simple-crud-network
+    restart: unless-stopped
+
+  # Frontend React App
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: simple-crud-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - simple-crud-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  simple-crud-network:
+    driver: bridge
