@@ -154,6 +154,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
           name: formData.name,
           description: formData.description,
           price: formData.price,
+          image_url: formData.image_url,
         };
         await updateItem(item.id, updateData);
       } else {
@@ -161,6 +162,7 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
           name: formData.name,
           description: formData.description,
           price: formData.price,
+          image_url: formData.image_url,
         };
         await createItem(createData);
       }
