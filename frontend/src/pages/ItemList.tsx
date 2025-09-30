@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Item, SearchItemResponse } from "../types";
+import { Item, SearchItemResponse, PaginatedItemResponse } from "../types";
 import { deleteItem, searchItems, getItems } from "../api";
 
 interface ItemListProps {
@@ -14,6 +14,9 @@ const ItemList: React.FC<ItemListProps> = ({
   refreshTrigger,
 }) => {
   const [items, setItems] = useState<Item[]>([]);
+  const [paginationData, setPaginationData] =
+    useState<PaginatedItemResponse | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [minPrice, setMinPrice] = useState("");
@@ -28,8 +31,9 @@ const ItemList: React.FC<ItemListProps> = ({
     const fetchItems = async () => {
       try {
         setLoading(true);
-        const data = await getItems();
-        setItems(data);
+        const data = await getItems(currentPage, 6);
+        setItems(data.items);
+        setPaginationData(data);
       } catch (error) {
         console.error("Error fetching items:", error);
         alert("Failed to fetch items");
@@ -39,7 +43,7 @@ const ItemList: React.FC<ItemListProps> = ({
     };
 
     fetchItems();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, currentPage]);
 
   // Search function with debounce
   useEffect(() => {
@@ -65,6 +69,7 @@ const ItemList: React.FC<ItemListProps> = ({
   const performSearch = async (query: string) => {
     try {
       setIsSearching(true);
+      setCurrentPage(1); // Reset to first page when searching
 
       // Prepare search parameters
       const searchParams: any = { q: query, limit: 20, offset: 0 };
@@ -85,6 +90,12 @@ const ItemList: React.FC<ItemListProps> = ({
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Scroll to top when changing page
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id: number) => {
@@ -124,13 +135,24 @@ const ItemList: React.FC<ItemListProps> = ({
 
         {/* Search Input */}
         <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search items by name or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="search-input"
-          />
+          <div className="search-input-wrapper">
+            <input
+              type="text"
+              placeholder="Search items by name or description..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="clear-search-btn"
+                title="Clear search"
+              >
+                ✕
+              </button>
+            )}
+          </div>
           {isSearching && <div className="search-loading">Searching...</div>}
         </div>
 
@@ -171,7 +193,17 @@ const ItemList: React.FC<ItemListProps> = ({
               }}
               className="btn btn-sm btn-secondary clear-filters"
             >
-              Clear Filters
+              Clear Price Filters
+            </button>
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setMinPrice("");
+                setMaxPrice("");
+              }}
+              className="btn btn-sm btn-danger clear-all"
+            >
+              Clear All
             </button>
           </div>
         </div>
@@ -249,6 +281,51 @@ const ItemList: React.FC<ItemListProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination - Only show when not in search mode and has pagination data */}
+      {!isSearchMode && paginationData && paginationData.total_pages > 1 && (
+        <div className="pagination-container">
+          <div className="pagination-info">
+            Showing {(currentPage - 1) * 6 + 1} to{" "}
+            {Math.min(currentPage * 6, paginationData.total)} of{" "}
+            {paginationData.total} items
+          </div>
+          <div className="pagination">
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="pagination-btn pagination-prev"
+            >
+              Previous
+            </button>
+
+            <div className="pagination-numbers">
+              {Array.from(
+                { length: paginationData.total_pages },
+                (_, i) => i + 1
+              ).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`pagination-number ${
+                    currentPage === page ? "active" : ""
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === paginationData.total_pages}
+              className="pagination-btn pagination-next"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -5,6 +5,7 @@ import {
   UpdateItemRequest,
   SearchItemRequest,
   SearchItemResponse,
+  PaginatedItemResponse,
 } from "./types";
 
 const API_BASE_URL = "/api/v1";
@@ -16,8 +17,11 @@ const api = axios.create({
   },
 });
 
-export const getItems = async (): Promise<Item[]> => {
-  const response = await api.get("/items");
+export const getItems = async (
+  page: number = 1,
+  limit: number = 6
+): Promise<PaginatedItemResponse> => {
+  const response = await api.get("/items", { params: { page, limit } });
   return response.data;
 };
 

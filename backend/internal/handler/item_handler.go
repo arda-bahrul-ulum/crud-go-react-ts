@@ -51,13 +51,28 @@ func (h *ItemHandler) GetItem(c *gin.Context) {
 }
 
 func (h *ItemHandler) GetAllItems(c *gin.Context) {
-	items, err := h.itemService.GetAllItems()
+	// Get pagination parameters
+	pageStr := c.DefaultQuery("page", "1")
+	limitStr := c.DefaultQuery("limit", "6")
+
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
+
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 6
+	}
+
+	// Get items with pagination
+	response, err := h.itemService.GetItemsWithPagination(page, limit)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, items)
+	c.JSON(http.StatusOK, response)
 }
 
 func (h *ItemHandler) UpdateItem(c *gin.Context) {

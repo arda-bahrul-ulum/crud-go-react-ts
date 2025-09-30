@@ -35,3 +35,12 @@ export interface SearchItemResponse {
   has_more: boolean;
   total_pages: number;
 }
+
+export interface PaginatedItemResponse {
+  items: Item[];
+  total: number;
+  page: number;
+  limit: number;
+  total_pages: number;
+  has_more: boolean;
+}

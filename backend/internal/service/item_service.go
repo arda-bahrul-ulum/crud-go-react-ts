@@ -10,6 +10,7 @@ type ItemService interface {
 	CreateItem(req *model.CreateItemRequest) (*model.Item, error)
 	GetItemByID(id uint) (*model.Item, error)
 	GetAllItems() ([]model.Item, error)
+	GetItemsWithPagination(page, limit int) (*model.PaginatedItemResponse, error)
 	SearchItems(req *model.SearchItemRequest) (*model.SearchItemResponse, error)
 	UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error)
 	DeleteItem(id uint) error
@@ -43,6 +44,43 @@ func (s *itemService) GetItemByID(id uint) (*model.Item, error) {
 
 func (s *itemService) GetAllItems() ([]model.Item, error) {
 	return s.itemRepo.GetAll()
+}
+
+func (s *itemService) GetItemsWithPagination(page, limit int) (*model.PaginatedItemResponse, error) {
+	// Set default values
+	if limit <= 0 {
+		limit = 6
+	}
+	if page <= 0 {
+		page = 1
+	}
+
+	offset := (page - 1) * limit
+
+	// Get items with pagination
+	items, err := s.itemRepo.GetAllWithPagination(limit, offset)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get total count
+	total, err := s.itemRepo.GetAllCount()
+	if err != nil {
+		return nil, err
+	}
+
+	// Calculate pagination info
+	totalPages := int((total + int64(limit) - 1) / int64(limit))
+	hasMore := page < totalPages
+
+	return &model.PaginatedItemResponse{
+		Items:      items,
+		Total:      total,
+		Page:       page,
+		Limit:      limit,
+		TotalPages: totalPages,
+		HasMore:    hasMore,
+	}, nil
 }
 
 func (s *itemService) SearchItems(req *model.SearchItemRequest) (*model.SearchItemResponse, error) {

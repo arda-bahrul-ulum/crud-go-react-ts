@@ -10,6 +10,8 @@ type ItemRepository interface {
 	Create(item *model.Item) error
 	GetByID(id uint) (*model.Item, error)
 	GetAll() ([]model.Item, error)
+	GetAllWithPagination(limit, offset int) ([]model.Item, error)
+	GetAllCount() (int64, error)
 	Search(query string, limit, offset int) ([]model.Item, error)
 	SearchCount(query string) (int64, error)
 	SearchWithPriceFilter(query string, minPrice, maxPrice float64, limit, offset int) ([]model.Item, error)
@@ -43,6 +45,18 @@ func (r *itemRepository) GetAll() ([]model.Item, error) {
 	var items []model.Item
 	err := r.db.Find(&items).Error
 	return items, err
+}
+
+func (r *itemRepository) GetAllWithPagination(limit, offset int) ([]model.Item, error) {
+	var items []model.Item
+	err := r.db.Limit(limit).Offset(offset).Find(&items).Error
+	return items, err
+}
+
+func (r *itemRepository) GetAllCount() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Item{}).Count(&count).Error
+	return count, err
 }
 
 func (r *itemRepository) Update(item *model.Item) error {

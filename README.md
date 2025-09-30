@@ -648,14 +648,14 @@ http://localhost:8080/api/v1
 
 #### Items
 
-| Method | Endpoint        | Description     | Request Body                                                   | Response             |
-| ------ | --------------- | --------------- | -------------------------------------------------------------- | -------------------- |
-| GET    | `/items`        | Get all items   | -                                                              | `Item[]`             |
-| GET    | `/items/search` | Search items    | Query params: `q`, `min_price`, `max_price`, `limit`, `offset` | `SearchItemResponse` |
-| GET    | `/items/:id`    | Get item by ID  | -                                                              | `Item`               |
-| POST   | `/items`        | Create new item | `CreateItemRequest`                                            | `Item`               |
-| PUT    | `/items/:id`    | Update item     | `UpdateItemRequest`                                            | `Item`               |
-| DELETE | `/items/:id`    | Delete item     | -                                                              | `{message: string}`  |
+| Method | Endpoint        | Description     | Request Body                                                   | Response                |
+| ------ | --------------- | --------------- | -------------------------------------------------------------- | ----------------------- |
+| GET    | `/items`        | Get all items   | Query params: `page`, `limit` (default: page=1, limit=6)       | `PaginatedItemResponse` |
+| GET    | `/items/search` | Search items    | Query params: `q`, `min_price`, `max_price`, `limit`, `offset` | `SearchItemResponse`    |
+| GET    | `/items/:id`    | Get item by ID  | -                                                              | `Item`                  |
+| POST   | `/items`        | Create new item | `CreateItemRequest`                                            | `Item`                  |
+| PUT    | `/items/:id`    | Update item     | `UpdateItemRequest`                                            | `Item`                  |
+| DELETE | `/items/:id`    | Delete item     | -                                                              | `{message: string}`     |
 
 #### Health Check
 
@@ -707,6 +707,34 @@ GET /api/v1/items/search?q=laptop&min_price=2000000&limit=10&offset=0
 GET /api/v1/items/search?q=laptop&max_price=3000000&limit=10&offset=0
 ```
 
+#### Get All Items (with Pagination)
+
+```bash
+GET /api/v1/items?page=1&limit=6
+```
+
+#### Paginated Response
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "description": "Gaming laptop",
+      "price": 15000000,
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "total": 15,
+  "page": 1,
+  "limit": 6,
+  "total_pages": 3,
+  "has_more": true
+}
+```
+
 #### Search Response
 
 ```json
@@ -739,6 +767,7 @@ GET /api/v1/items/search?q=laptop&max_price=3000000&limit=10&offset=0
 - ✅ **Delete** - Menghapus item
 - ✅ **Search** - Pencarian server-side dengan pagination
 - ✅ **Price Filter** - Filter berdasarkan rentang harga (min/max)
+- ✅ **Pagination** - Pagination otomatis setiap 6 item
 - ✅ **Form Validation** - Validasi input form
 - ✅ **Error Handling** - Penanganan error yang baik
 - ✅ **Loading States** - Indikator loading

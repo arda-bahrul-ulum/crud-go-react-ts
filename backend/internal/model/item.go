@@ -44,3 +44,12 @@ type SearchItemResponse struct {
 	HasMore    bool   `json:"has_more"`
 	TotalPages int    `json:"total_pages"`
 }
+
+type PaginatedItemResponse struct {
+	Items      []Item `json:"items"`
+	Total      int64  `json:"total"`
+	Page       int    `json:"page"`
+	Limit      int    `json:"limit"`
+	TotalPages int    `json:"total_pages"`
+	HasMore    bool   `json:"has_more"`
+}
