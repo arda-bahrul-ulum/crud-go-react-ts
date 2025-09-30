@@ -406,9 +406,18 @@ body {
     max-width: 100%;
   }
 
-  .pagination {
+  .pagination-container {
     flex-direction: column;
+    align-items: stretch;
     gap: 1rem;
+  }
+
+  .pagination-info {
+    text-align: center;
+  }
+
+  .pagination {
+    justify-content: center;
   }
 
   .pagination-numbers {
@@ -507,18 +516,21 @@ body {
   background: #f8fafc;
   border-radius: 0.5rem;
   border: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .pagination-info {
-  text-align: center;
   color: #6b7280;
   font-size: 0.875rem;
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
 .pagination {
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
