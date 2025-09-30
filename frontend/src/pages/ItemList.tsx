@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Item, SearchItemResponse, PaginatedItemResponse } from "../types";
 import { deleteItem, searchItems, getItems } from "../api";
 import ItemDetailModal from "./ItemDetailModal";
+import Swal from "sweetalert2";
 
 interface ItemListProps {
   onEdit: (item: Item) => void;
@@ -39,7 +40,12 @@ const ItemList: React.FC<ItemListProps> = ({
         setPaginationData(data);
       } catch (error) {
         console.error("Error fetching items:", error);
-        alert("Failed to fetch items");
+        Swal.fire({
+          icon: "error",
+          title: "Load Failed",
+          text: "Failed to fetch items. Please refresh the page.",
+          confirmButtonColor: "#dc3545",
+        });
       } finally {
         setLoading(false);
       }
@@ -89,7 +95,12 @@ const ItemList: React.FC<ItemListProps> = ({
       setSearchResults(results);
     } catch (error) {
       console.error("Error searching items:", error);
-      alert("Failed to search items");
+      Swal.fire({
+        icon: "error",
+        title: "Search Failed",
+        text: "Failed to search items. Please try again.",
+        confirmButtonColor: "#dc3545",
+      });
     } finally {
       setIsSearching(false);
     }
@@ -112,13 +123,39 @@ const ItemList: React.FC<ItemListProps> = ({
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this item?")) {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#dc3545",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
       try {
         await deleteItem(id);
+
+        Swal.fire({
+          icon: "success",
+          title: "Deleted!",
+          text: "Item has been deleted successfully.",
+          confirmButtonColor: "#28a745",
+          timer: 2000,
+          timerProgressBar: true,
+        });
+
         onDelete(); // This will trigger refreshTrigger in parent
       } catch (error) {
         console.error("Error deleting item:", error);
-        alert("Failed to delete item");
+        Swal.fire({
+          icon: "error",
+          title: "Delete Failed",
+          text: "Failed to delete item. Please try again.",
+          confirmButtonColor: "#dc3545",
+        });
       }
     }
   };

@@ -45,6 +45,7 @@ func SetupRouter(db *gorm.DB) *gin.Engine {
 		items := api.Group("/items")
 		{
 			items.POST("", itemHandler.CreateItem)
+			items.POST("/bulk", itemHandler.BulkCreateItems)
 			items.GET("", itemHandler.GetAllItems)
 			items.GET("/search", itemHandler.SearchItems)
 			items.GET("/:id", itemHandler.GetItem)

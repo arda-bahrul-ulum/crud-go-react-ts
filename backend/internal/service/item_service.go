@@ -15,6 +15,7 @@ type ItemService interface {
 	UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error)
 	DeleteItem(id uint) error
 	CheckImageUsage(imageURL string) (int64, error)
+	BulkCreateItems(reqs []*model.CreateItemRequest) ([]*model.Item, error)
 }
 
 type itemService struct {
@@ -26,6 +27,18 @@ func NewItemService(itemRepo repository.ItemRepository) ItemService {
 }
 
 func (s *itemService) CreateItem(req *model.CreateItemRequest) (*model.Item, error) {
+	// Start transaction
+	tx := s.itemRepo.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
 	item := &model.Item{
 		Name:        req.Name,
 		Description: req.Description,
@@ -33,7 +46,14 @@ func (s *itemService) CreateItem(req *model.CreateItemRequest) (*model.Item, err
 		ImageURL:    req.ImageURL,
 	}
 
-	if err := s.itemRepo.Create(item); err != nil {
+	// Create item within transaction
+	if err := tx.Create(item).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
 		return nil, err
 	}
 
@@ -141,11 +161,26 @@ func (s *itemService) SearchItems(req *model.SearchItemRequest) (*model.SearchIt
 }
 
 func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.Item, error) {
-	item, err := s.itemRepo.GetByID(id)
-	if err != nil {
+	// Start transaction
+	tx := s.itemRepo.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	// Get item within transaction
+	var item model.Item
+	if err := tx.First(&item, id).Error; err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
+	// Update fields
 	if req.Name != nil {
 		item.Name = *req.Name
 	}
@@ -154,6 +189,7 @@ func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.
 	}
 	if req.Price != nil {
 		if *req.Price < 0 {
+			tx.Rollback()
 			return nil, errors.New("price cannot be negative")
 		}
 		item.Price = *req.Price
@@ -162,17 +198,88 @@ func (s *itemService) UpdateItem(id uint, req *model.UpdateItemRequest) (*model.
 		item.ImageURL = *req.ImageURL
 	}
 
-	if err := s.itemRepo.Update(item); err != nil {
+	// Update item within transaction
+	if err := tx.Save(&item).Error; err != nil {
+		tx.Rollback()
 		return nil, err
 	}
 
-	return item, nil
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return &item, nil
 }
 
 func (s *itemService) DeleteItem(id uint) error {
-	return s.itemRepo.Delete(id)
+	// Start transaction
+	tx := s.itemRepo.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	// Delete item within transaction
+	if err := tx.Delete(&model.Item{}, id).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *itemService) CheckImageUsage(imageURL string) (int64, error) {
 	return s.itemRepo.CountByImageURL(imageURL)
+}
+
+// BulkCreateItems demonstrates complex transaction with multiple operations
+func (s *itemService) BulkCreateItems(reqs []*model.CreateItemRequest) ([]*model.Item, error) {
+	// Start transaction
+	tx := s.itemRepo.GetDB().Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if tx.Error != nil {
+		return nil, tx.Error
+	}
+
+	var items []*model.Item
+
+	// Create multiple items within single transaction
+	for _, req := range reqs {
+		item := &model.Item{
+			Name:        req.Name,
+			Description: req.Description,
+			Price:       req.Price,
+			ImageURL:    req.ImageURL,
+		}
+
+		if err := tx.Create(item).Error; err != nil {
+			tx.Rollback()
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	// Commit transaction
+	if err := tx.Commit().Error; err != nil {
+		return nil, err
+	}
+
+	return items, nil
 }

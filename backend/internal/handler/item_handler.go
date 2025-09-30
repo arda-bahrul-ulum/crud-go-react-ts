@@ -379,3 +379,32 @@ func (h *ItemHandler) DeleteUploadedImage(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Image deleted successfully"})
 }
+
+func (h *ItemHandler) BulkCreateItems(c *gin.Context) {
+	var req struct {
+		Items []model.CreateItemRequest `json:"items" binding:"required"`
+	}
+	
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Convert to slice of pointers
+	var createReqs []*model.CreateItemRequest
+	for i := range req.Items {
+		createReqs = append(createReqs, &req.Items[i])
+	}
+
+	items, err := h.itemService.BulkCreateItems(createReqs)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Items created successfully",
+		"items":   items,
+		"count":   len(items),
+	})
+}

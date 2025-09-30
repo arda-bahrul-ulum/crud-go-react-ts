@@ -7,6 +7,7 @@ import {
   updateItemImage,
   deleteUploadedImage,
 } from "../api";
+import Swal from "sweetalert2";
 
 interface ItemFormProps {
   item?: Item | null;
@@ -72,13 +73,23 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
       "image/webp",
     ];
     if (!allowedTypes.includes(file.type)) {
-      alert("Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.");
+      Swal.fire({
+        icon: "error",
+        title: "Invalid File Type",
+        text: "Only JPEG, PNG, GIF, and WebP files are allowed.",
+        confirmButtonColor: "#dc3545",
+      });
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert("File size too large. Maximum size is 5MB.");
+      Swal.fire({
+        icon: "error",
+        title: "File Too Large",
+        text: "Maximum file size is 5MB.",
+        confirmButtonColor: "#dc3545",
+      });
       return;
     }
 
@@ -105,7 +116,12 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
       }
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image");
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: "Failed to upload image. Please try again.",
+        confirmButtonColor: "#dc3545",
+      });
     } finally {
       setUploading(false);
     }
@@ -133,6 +149,36 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
   };
 
   const handleClose = async () => {
+    // Check if there are unsaved changes
+    const hasChanges =
+      (item &&
+        (formData.name !== item.name ||
+          formData.description !== item.description ||
+          formData.price !== item.price ||
+          formData.image_url !== (item.image_url || ""))) ||
+      (!item &&
+        (formData.name !== "" ||
+          formData.description !== "" ||
+          formData.price !== 0 ||
+          formData.image_url !== ""));
+
+    if (hasChanges) {
+      const result = await Swal.fire({
+        title: "Unsaved Changes",
+        text: "You have unsaved changes. Are you sure you want to close?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, close it!",
+        cancelButtonText: "Cancel",
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+    }
+
     // Cleanup uploaded image if form is closed without saving (only for new items)
     if (formData.image_url && !item) {
       try {
@@ -157,6 +203,15 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
           image_url: formData.image_url,
         };
         await updateItem(item.id, updateData);
+
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Item has been updated successfully.",
+          confirmButtonColor: "#28a745",
+          timer: 2000,
+          timerProgressBar: true,
+        });
       } else {
         const createData: CreateItemRequest = {
           name: formData.name,
@@ -165,11 +220,25 @@ const ItemForm: React.FC<ItemFormProps> = ({ item, onClose }) => {
           image_url: formData.image_url,
         };
         await createItem(createData);
+
+        Swal.fire({
+          icon: "success",
+          title: "Success!",
+          text: "Item has been created successfully.",
+          confirmButtonColor: "#28a745",
+          timer: 2000,
+          timerProgressBar: true,
+        });
       }
       onClose();
     } catch (error) {
       console.error("Error saving item:", error);
-      alert("Failed to save item");
+      Swal.fire({
+        icon: "error",
+        title: "Save Failed",
+        text: "Failed to save item. Please try again.",
+        confirmButtonColor: "#dc3545",
+      });
     } finally {
       setLoading(false);
     }

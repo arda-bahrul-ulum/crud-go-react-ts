@@ -19,6 +19,7 @@ type ItemRepository interface {
 	Update(item *model.Item) error
 	Delete(id uint) error
 	CountByImageURL(imageURL string) (int64, error)
+	GetDB() *gorm.DB
 }
 
 type itemRepository struct {
@@ -122,4 +123,8 @@ func (r *itemRepository) CountByImageURL(imageURL string) (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Item{}).Where("image_url = ?", imageURL).Count(&count).Error
 	return count, err
+}
+
+func (r *itemRepository) GetDB() *gorm.DB {
+	return r.db
 }
